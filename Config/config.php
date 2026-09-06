@@ -71,6 +71,14 @@ return [
                 'controller' => 'MauticPlugin\MautomicCrmBundle\Controller\DealFieldController::executeAction',
             ],
         ],
+        'public' => [
+            'mautic_mautomic_crm_chatwoot_webhook' => [
+                'path'       => '/mautomic/chatwoot/webhook',
+                'controller' => 'MauticPlugin\MautomicCrmBundle\Controller\ChatwootWebhookController::webhookAction',
+                'method'     => 'POST',
+                'format'     => 'json',
+            ],
+        ],
         'api' => [
             'mautomic_api_forecast' => [
                 'path'       => '/mautomic/forecast',
