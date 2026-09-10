@@ -71,6 +71,11 @@ return [
                 'path'       => '/mautomic-crm/settings',
                 'controller' => 'MauticPlugin\MautomicCrmBundle\Controller\SettingsController::indexAction',
             ],
+            'mautic_mautomic_crm_chatwoot_diagnostics' => [
+                'path'       => '/mautomic-crm/settings/chatwoot',
+                'controller' => 'MauticPlugin\MautomicCrmBundle\Controller\ChatwootDiagnosticsController::indexAction',
+                'method'     => 'GET',
+            ],
             'mautic_mautomic_crm_deal_field_index' => [
                 'path'       => '/mautomic-crm/settings/deal-fields/{page}',
                 'controller' => 'MauticPlugin\MautomicCrmBundle\Controller\DealFieldController::indexAction',
@@ -179,6 +184,13 @@ return [
                 'route'     => 'mautic_mautomic_crm_settings_index',
                 'access'    => 'mautomic_crm:deals:view',
                 'priority'  => 18,
+            ],
+            'mautomic_crm.chatwoot.diagnostics.title' => [
+                'id'        => 'mautomic_crm_chatwoot_diagnostics',
+                'iconClass' => 'ri-pulse-line',
+                'route'     => 'mautic_mautomic_crm_chatwoot_diagnostics',
+                'access'    => 'admin',
+                'priority'  => 19,
             ],
         ],
     ],

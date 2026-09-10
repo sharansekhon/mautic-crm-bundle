@@ -6,6 +6,11 @@ namespace MauticPlugin\MautomicCrmBundle\Integration;
 
 final class ChatwootSettings
 {
+    public function __construct(
+        private readonly string $configPath = '/etc/mautic/chatwoot.env',
+    ) {
+    }
+
     public function assignmentEnabled(): bool
     {
         return filter_var($this->all()['CHATWOOT_ASSIGNMENT_ENABLED'] ?? false, FILTER_VALIDATE_BOOL);
@@ -26,6 +31,11 @@ final class ChatwootSettings
         $value = $this->nonEmpty('CHATWOOT_ACCOUNT_ID');
 
         return null !== $value && ctype_digit($value) ? (int) $value : null;
+    }
+
+    public function webhookSecretConfigured(): bool
+    {
+        return null !== $this->nonEmpty('CHATWOOT_WEBHOOK_SECRET');
     }
 
     /** @return array<int, int> */
@@ -51,7 +61,7 @@ final class ChatwootSettings
     /** @return array<string, mixed> */
     private function all(): array
     {
-        $settings = @parse_ini_file('/etc/mautic/chatwoot.env', false, INI_SCANNER_RAW);
+        $settings = @parse_ini_file($this->configPath, false, INI_SCANNER_RAW);
 
         return is_array($settings) ? $settings : [];
     }
