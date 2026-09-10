@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MauticPlugin\MautomicCrmBundle\Controller;
 
 use JsonException;
+use MauticPlugin\MautomicCrmBundle\Integration\ChatwootAssignmentClient;
 use Psr\Log\LoggerInterface;
 use MauticPlugin\MautomicCrmBundle\Integration\ChatwootDryRunRouter;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
@@ -28,6 +29,7 @@ final class ChatwootWebhookController
         #[Autowire(service: 'monolog.logger.mautic')]
         private readonly LoggerInterface $logger,
         private readonly ChatwootDryRunRouter $router,
+        private readonly ChatwootAssignmentClient $assignmentClient,
     ) {
     }
 
@@ -88,7 +90,9 @@ final class ChatwootWebhookController
             'message_content_length' => null === $messageContent ? null : strlen($messageContent),
         ]);
 
-        $this->logger->notice('Mautomic Chatwoot routing evaluated.', $this->router->route($payload));
+        $routing = $this->router->route($payload);
+        $this->logger->notice('Mautomic Chatwoot routing evaluated.', $routing);
+        $this->logger->notice('Mautomic Chatwoot assignment evaluated.', $this->assignmentClient->assign($routing));
 
         return new JsonResponse(['status' => 'ok']);
     }
