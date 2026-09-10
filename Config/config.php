@@ -10,6 +10,10 @@ return [
 
     'routes' => [
         'main' => [
+            'mautic_mautomic_crm_inbox_index' => [
+                'path'       => '/mautomic/inbox',
+                'controller' => 'MauticPlugin\\MautomicCrmBundle\\Controller\\InboxController::indexAction',
+            ],
             'mautic_mautomic_crm_dashboard_index' => [
                 'path'       => '/mautomic/dashboard',
                 'controller' => 'MauticPlugin\MautomicCrmBundle\Controller\DashboardController::indexAction',
@@ -143,6 +147,12 @@ return [
                 'access'   => 'mautomic_crm:deals:view',
                 'parent'   => 'mautomic_crm.crm',
                 'priority' => 10,
+            ],
+            'mautomic_crm.inbox' => [
+                'route'    => 'mautic_mautomic_crm_inbox_index',
+                'access'   => 'mautomic_crm:inbox:view',
+                'parent'   => 'mautomic_crm.crm',
+                'priority' => 15,
             ],
             'mautomic_crm.pipelines' => [
                 'route'    => 'mautic_mautomic_crm_pipeline_index',
