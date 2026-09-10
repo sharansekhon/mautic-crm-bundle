@@ -31,6 +31,17 @@ final class ChatwootWebhookController
 
     public function webhookAction(Request $request): JsonResponse
     {
+        $webhookSecret = $this->webhookSecret();
+
+        if (null === $webhookSecret || !hash_equals($webhookSecret, (string) $request->query->get('key', ''))) {
+            $this->logger->warning('Mautomic Chatwoot webhook rejected: invalid webhook key.');
+
+            return new JsonResponse(
+                ['status' => 'error', 'message' => 'Invalid webhook key.'],
+                Response::HTTP_FORBIDDEN,
+            );
+        }
+
         try {
             $payload = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
         } catch (JsonException) {
@@ -115,5 +126,18 @@ final class ChatwootWebhookController
         $value = trim((string) $value);
 
         return '' === $value ? null : $value;
+    }
+
+    private function webhookSecret(): ?string
+    {
+        $settings = @parse_ini_file('/etc/mautic/chatwoot.env', false, INI_SCANNER_RAW);
+
+        if (!is_array($settings) || !isset($settings['CHATWOOT_WEBHOOK_SECRET'])) {
+            return null;
+        }
+
+        $secret = trim((string) $settings['CHATWOOT_WEBHOOK_SECRET']);
+
+        return '' === $secret ? null : $secret;
     }
 }
