@@ -14,6 +14,11 @@ return [
                 'path'       => '/mautomic/inbox',
                 'controller' => 'MauticPlugin\\MautomicCrmBundle\\Controller\\InboxController::indexAction',
             ],
+            'mautic_mautomic_crm_inbox_view' => [
+                'path'         => '/mautomic/inbox/{conversationId}',
+                'controller'   => 'MauticPlugin\\MautomicCrmBundle\\Controller\\InboxController::viewAction',
+                'requirements' => ['conversationId' => '\\d+'],
+            ],
             'mautic_mautomic_crm_dashboard_index' => [
                 'path'       => '/mautomic/dashboard',
                 'controller' => 'MauticPlugin\MautomicCrmBundle\Controller\DashboardController::indexAction',
