@@ -81,11 +81,19 @@ jobs:
         working-directory: mautic
         run: |
           bin/php-cs-fixer fix \
-            plugins/MautomicCrmBundle/Integration \
             plugins/MautomicCrmBundle/Command/SyncChatwootContactsCommand.php \
-            plugins/MautomicCrmBundle/Controller/ChatwootDiagnosticsController.php \
             plugins/MautomicCrmBundle/Controller/ChatwootWebhookController.php \
-            plugins/MautomicCrmBundle/Controller/InboxController.php \
+            plugins/MautomicCrmBundle/Integration/ChatwootContactClient.php \
+            plugins/MautomicCrmBundle/Integration/ChatwootContactWebhookHandler.php \
+            plugins/MautomicCrmBundle/Integration/ChatwootSettings.php \
+            plugins/MautomicCrmBundle/Integration/ContactSyncDryRunAnalyzer.php \
+            plugins/MautomicCrmBundle/Integration/InternationalPhoneNormalizer.php \
+            plugins/MautomicCrmBundle/Integration/NormalizedPhoneIndex.php \
+            plugins/MautomicCrmBundle/Tests/Unit/Integration/ChatwootContactClientTest.php \
+            plugins/MautomicCrmBundle/Tests/Unit/Integration/ChatwootContactWebhookHandlerTest.php \
+            plugins/MautomicCrmBundle/Tests/Unit/Integration/ChatwootSettingsTest.php \
+            plugins/MautomicCrmBundle/Tests/Unit/Integration/ContactSyncDryRunAnalyzerTest.php \
+            plugins/MautomicCrmBundle/Tests/Unit/Integration/InternationalPhoneNormalizerTest.php \
             --dry-run --diff --config=.php-cs-fixer.php --using-cache=no
 
   unit-tests:
