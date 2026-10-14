@@ -79,7 +79,14 @@ jobs:
 
       - name: Coding Standards
         working-directory: mautic
-        run: bin/php-cs-fixer fix plugins/MautomicCrmBundle --dry-run --diff --config=.php-cs-fixer.php --using-cache=no
+        run: |
+          bin/php-cs-fixer fix \
+            plugins/MautomicCrmBundle/Integration \
+            plugins/MautomicCrmBundle/Command/SyncChatwootContactsCommand.php \
+            plugins/MautomicCrmBundle/Controller/ChatwootDiagnosticsController.php \
+            plugins/MautomicCrmBundle/Controller/ChatwootWebhookController.php \
+            plugins/MautomicCrmBundle/Controller/InboxController.php \
+            --dry-run --diff --config=.php-cs-fixer.php --using-cache=no
 
   unit-tests:
     name: "Unit Tests"
