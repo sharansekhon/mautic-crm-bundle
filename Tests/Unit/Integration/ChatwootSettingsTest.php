@@ -26,6 +26,7 @@ CHATWOOT_API_TOKEN=test-token
 CHATWOOT_ACCOUNT_ID=12
 CHATWOOT_WEBHOOK_SECRET=test-secret
 CHATWOOT_ASSIGNMENT_ENABLED=false
+CHATWOOT_OUTBOUND_ENABLED=false
 CHATWOOT_AGENT_MAP=2:7, 3:9, invalid, 4:x
 INI);
 
@@ -34,6 +35,9 @@ INI);
         self::assertSame(12, $settings->accountId());
         self::assertTrue($settings->webhookSecretConfigured());
         self::assertFalse($settings->assignmentEnabled());
+        self::assertFalse($settings->outboundEnabled());
+        self::assertTrue($settings->isWebhookKeyValid('test-secret'));
+        self::assertFalse($settings->isWebhookKeyValid('wrong-secret'));
         self::assertSame([2 => 7, 3 => 9], $settings->agentMap());
     }
 
@@ -46,6 +50,8 @@ INI);
         self::assertNull($settings->accountId());
         self::assertFalse($settings->webhookSecretConfigured());
         self::assertFalse($settings->assignmentEnabled());
+        self::assertFalse($settings->outboundEnabled());
+        self::assertFalse($settings->isWebhookKeyValid(''));
         self::assertSame([], $settings->agentMap());
     }
 

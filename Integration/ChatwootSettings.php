@@ -16,6 +16,11 @@ final class ChatwootSettings
         return filter_var($this->all()['CHATWOOT_ASSIGNMENT_ENABLED'] ?? false, FILTER_VALIDATE_BOOL);
     }
 
+    public function outboundEnabled(): bool
+    {
+        return filter_var($this->all()['CHATWOOT_OUTBOUND_ENABLED'] ?? false, FILTER_VALIDATE_BOOL);
+    }
+
     public function baseUrl(): ?string
     {
         return $this->nonEmpty('CHATWOOT_BASE_URL');
@@ -36,6 +41,13 @@ final class ChatwootSettings
     public function webhookSecretConfigured(): bool
     {
         return null !== $this->nonEmpty('CHATWOOT_WEBHOOK_SECRET');
+    }
+
+    public function isWebhookKeyValid(string $providedKey): bool
+    {
+        $secret = $this->nonEmpty('CHATWOOT_WEBHOOK_SECRET');
+
+        return null !== $secret && hash_equals($secret, $providedKey);
     }
 
     /** @return array<int, int> */

@@ -6,8 +6,10 @@ namespace MauticPlugin\MautomicCrmBundle\Controller;
 
 use JsonException;
 use MauticPlugin\MautomicCrmBundle\Integration\ChatwootAssignmentClient;
-use Psr\Log\LoggerInterface;
+use MauticPlugin\MautomicCrmBundle\Integration\ChatwootContactWebhookHandler;
 use MauticPlugin\MautomicCrmBundle\Integration\ChatwootDryRunRouter;
+use MauticPlugin\MautomicCrmBundle\Integration\ChatwootSettings;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -30,14 +32,14 @@ final class ChatwootWebhookController
         private readonly LoggerInterface $logger,
         private readonly ChatwootDryRunRouter $router,
         private readonly ChatwootAssignmentClient $assignmentClient,
+        private readonly ChatwootContactWebhookHandler $contactWebhookHandler,
+        private readonly ChatwootSettings $settings,
     ) {
     }
 
     public function webhookAction(Request $request): JsonResponse
     {
-        $webhookSecret = $this->webhookSecret();
-
-        if (null === $webhookSecret || !hash_equals($webhookSecret, (string) $request->query->get('key', ''))) {
+        if (!$this->settings->isWebhookKeyValid((string) $request->query->get('key', ''))) {
             $this->logger->warning('Mautomic Chatwoot webhook rejected: invalid webhook key.');
 
             return new JsonResponse(
@@ -80,19 +82,24 @@ final class ChatwootWebhookController
             'inbox_id'               => $this->firstString($this->valueAt($payload, ['inbox', 'id']), $payload['inbox_id'] ?? null, $this->valueAt($payload, ['conversation', 'inbox_id'])),
             'conversation_id'        => $this->firstString($this->valueAt($payload, ['conversation', 'id']), $payload['conversation_id'] ?? null),
             'contact_id'             => $this->firstString($this->valueAt($payload, ['contact', 'id']), $payload['contact_id'] ?? null, $this->valueAt($payload, ['conversation', 'meta', 'sender', 'id']), $this->valueAt($payload, ['sender', 'id'])),
-            'contact_name'           => $this->firstString($this->valueAt($payload, ['contact', 'name']), $payload['contact_name'] ?? null, $this->valueAt($payload, ['conversation', 'meta', 'sender', 'name']), $this->valueAt($payload, ['sender', 'name'])),
-            'phone_number'           => $this->firstString($this->valueAt($payload, ['contact', 'phone_number']), $payload['phone_number'] ?? null, $this->valueAt($payload, ['conversation', 'meta', 'sender', 'phone_number']), $this->valueAt($payload, ['sender', 'phone_number'])),
+            'phone_present'          => null !== $this->firstString($this->valueAt($payload, ['contact', 'phone_number']), $payload['phone_number'] ?? null, $this->valueAt($payload, ['conversation', 'meta', 'sender', 'phone_number']), $this->valueAt($payload, ['sender', 'phone_number'])),
             'message_id'             => $this->firstString($this->valueAt($payload, ['message', 'id']), $payload['message_id'] ?? null, str_starts_with((string) $event, 'message_') ? ($payload['id'] ?? null) : null),
             'message_type'           => $this->firstString($this->valueAt($payload, ['message', 'message_type']), $payload['message_type'] ?? null, $payload['direction'] ?? null),
             'sender_id'              => $this->firstString($this->valueAt($payload, ['sender', 'id']), $payload['sender_id'] ?? null, $this->valueAt($payload, ['message', 'sender', 'id'])),
-            'sender_name'            => $this->firstString($this->valueAt($payload, ['sender', 'name']), $payload['sender_name'] ?? null, $this->valueAt($payload, ['message', 'sender', 'name'])),
             'conversation_status'    => $this->firstString($this->valueAt($payload, ['conversation', 'status']), $payload['conversation_status'] ?? null, $payload['status'] ?? null),
             'message_content_length' => null === $messageContent ? null : strlen($messageContent),
         ]);
 
-        $routing = $this->router->route($payload);
-        $this->logger->notice('Mautomic Chatwoot routing evaluated.', $routing);
-        $this->logger->notice('Mautomic Chatwoot assignment evaluated.', $this->assignmentClient->assign($routing));
+        if (in_array($event, ['contact_created', 'contact_updated'], true)) {
+            $this->logger->notice(
+                'Mautomic Chatwoot contact sync evaluated.',
+                $this->contactWebhookHandler->evaluate($payload),
+            );
+        } else {
+            $routing = $this->router->route($payload);
+            $this->logger->notice('Mautomic Chatwoot routing evaluated.', $routing);
+            $this->logger->notice('Mautomic Chatwoot assignment evaluated.', $this->assignmentClient->assign($routing));
+        }
 
         return new JsonResponse(['status' => 'ok']);
     }
@@ -134,18 +141,5 @@ final class ChatwootWebhookController
         $value = trim((string) $value);
 
         return '' === $value ? null : $value;
-    }
-
-    private function webhookSecret(): ?string
-    {
-        $settings = @parse_ini_file('/etc/mautic/chatwoot.env', false, INI_SCANNER_RAW);
-
-        if (!is_array($settings) || !isset($settings['CHATWOOT_WEBHOOK_SECRET'])) {
-            return null;
-        }
-
-        $secret = trim((string) $settings['CHATWOOT_WEBHOOK_SECRET']);
-
-        return '' === $secret ? null : $secret;
     }
 }
