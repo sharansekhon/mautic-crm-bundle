@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace MauticPlugin\MautomicCrmBundle\Controller;
 
-use JsonException;
 use MauticPlugin\MautomicCrmBundle\Integration\ChatwootAssignmentClient;
 use MauticPlugin\MautomicCrmBundle\Integration\ChatwootContactWebhookHandler;
 use MauticPlugin\MautomicCrmBundle\Integration\ChatwootDryRunRouter;
@@ -50,7 +49,7 @@ final class ChatwootWebhookController
 
         try {
             $payload = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
-        } catch (JsonException) {
+        } catch (\JsonException) {
             $this->logger->warning('Mautomic Chatwoot webhook rejected: malformed JSON.');
 
             return new JsonResponse(

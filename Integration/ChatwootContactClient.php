@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace MauticPlugin\MautomicCrmBundle\Integration;
 
-use JsonException;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
@@ -79,7 +78,7 @@ final class ChatwootContactClient
             }
 
             $statusCode = $response->getStatusCode();
-        } catch (TransportExceptionInterface|JsonException) {
+        } catch (TransportExceptionInterface|\JsonException) {
             return ['contact_sync_status' => 'transport_error'];
         }
 
