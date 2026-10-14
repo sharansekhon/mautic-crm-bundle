@@ -56,6 +56,13 @@ jobs:
       - name: PHPStan (level 6)
         working-directory: mautic
         run: |
+          cat > /tmp/phpstan-chatwoot.neon <<'NEON'
+          includes:
+              - ${{ github.workspace }}/mautic/phpstan.neon
+
+          parameters:
+              reportUnmatchedIgnoredErrors: false
+          NEON
           # Exclude Codeception acceptance tests (auto-generated tester trait not available in CI)
           php -r "
             \$c = file_get_contents('phpstan.neon');
@@ -68,7 +75,7 @@ jobs:
             plugins/MautomicCrmBundle/Controller/ChatwootDiagnosticsController.php \
             plugins/MautomicCrmBundle/Controller/ChatwootWebhookController.php \
             plugins/MautomicCrmBundle/Controller/InboxController.php \
-            --level=6 --no-progress --no-report-unmatched-ignored-errors
+            --configuration=/tmp/phpstan-chatwoot.neon --level=6 --no-progress
 
       - name: Coding Standards
         working-directory: mautic
