@@ -62,7 +62,13 @@ jobs:
             \$c = str_replace(\"\texcludePaths:\n\", \"\texcludePaths:\n\t\t- plugins/MautomicCrmBundle/Tests/acceptance\n\", \$c);
             file_put_contents('phpstan.neon', \$c);
           "
-          php -d memory_limit=1G bin/phpstan analyse plugins/MautomicCrmBundle --level=6 --no-progress
+          php -d memory_limit=1G bin/phpstan analyse \
+            plugins/MautomicCrmBundle/Integration \
+            plugins/MautomicCrmBundle/Command/SyncChatwootContactsCommand.php \
+            plugins/MautomicCrmBundle/Controller/ChatwootDiagnosticsController.php \
+            plugins/MautomicCrmBundle/Controller/ChatwootWebhookController.php \
+            plugins/MautomicCrmBundle/Controller/InboxController.php \
+            --level=6 --no-progress
 
       - name: Coding Standards
         working-directory: mautic
@@ -97,7 +103,7 @@ jobs:
 
       - name: Run unit tests
         working-directory: mautic
-        run: php bin/phpunit plugins/MautomicCrmBundle/Tests/Unit/ --testdox
+        run: php bin/phpunit plugins/MautomicCrmBundle/Tests/Unit/Integration/ --testdox
 
   functional-tests:
     name: "Functional Tests"

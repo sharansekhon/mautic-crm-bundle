@@ -10,18 +10,12 @@ use Symfony\Component\HttpFoundation\Response;
 
 final class InboxController extends CommonController
 {
-    public static function getSubscribedServices(): array
-    {
-        return array_merge(parent::getSubscribedServices(), [ChatwootConversationClient::class => ChatwootConversationClient::class]);
-    }
-
-    public function indexAction(): Response
+    public function indexAction(ChatwootConversationClient $client): Response|array
     {
         if (!$this->security->isGranted('mautomic_crm:inbox:view')) {
             return $this->accessDenied();
         }
 
-        $client = $this->container->get(ChatwootConversationClient::class);
         $result = $client->forMauticUser((int) $this->user?->getId(), $this->security->isAdmin());
 
         return $this->delegateView([
@@ -31,14 +25,12 @@ final class InboxController extends CommonController
         ]);
     }
 
-    public function viewAction(int $conversationId): Response
+    public function viewAction(int $conversationId, ChatwootConversationClient $client): Response|array
     {
         if (!$this->security->isGranted('mautomic_crm:inbox:view')) {
             return $this->accessDenied();
         }
 
-        /** @var ChatwootConversationClient $client */
-        $client = $this->container->get(ChatwootConversationClient::class);
         $result = $client->detailForMauticUser($conversationId, (int) $this->user?->getId(), $this->security->isAdmin());
 
         if (in_array($result['status'], ['forbidden', 'not_found'], true)) {
