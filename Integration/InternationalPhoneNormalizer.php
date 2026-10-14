@@ -10,8 +10,10 @@ use libphonenumber\PhoneNumberUtil;
 
 final class InternationalPhoneNormalizer
 {
-    public function __construct(private readonly PhoneNumberUtil $phoneNumberUtil)
-    {
+    public function __construct(
+        private readonly PhoneNumberUtil $phoneNumberUtil,
+        private readonly ChatwootSettings $settings,
+    ) {
     }
 
     public function normalize(mixed $phone): ?string
@@ -21,12 +23,20 @@ final class InternationalPhoneNormalizer
         }
 
         $phone = trim((string) $phone);
-        if ('' === $phone || !str_starts_with($phone, '+')) {
+        if ('' === $phone) {
             return null;
         }
 
+        $region = null;
+        if (!str_starts_with($phone, '+')) {
+            $region = $this->settings->phoneDefaultRegion();
+            if (null === $region || !in_array($region, $this->phoneNumberUtil->getSupportedRegions(), true)) {
+                return null;
+            }
+        }
+
         try {
-            $number = $this->phoneNumberUtil->parse($phone, null);
+            $number = $this->phoneNumberUtil->parse($phone, $region);
         } catch (NumberParseException) {
             return null;
         }

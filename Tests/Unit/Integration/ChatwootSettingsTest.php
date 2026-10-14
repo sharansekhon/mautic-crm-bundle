@@ -24,6 +24,7 @@ final class ChatwootSettingsTest extends TestCase
 CHATWOOT_BASE_URL=https://inbox.example.test/
 CHATWOOT_API_TOKEN=test-token
 CHATWOOT_ACCOUNT_ID=12
+CHATWOOT_PHONE_DEFAULT_REGION=in
 CHATWOOT_WEBHOOK_SECRET=test-secret
 CHATWOOT_ASSIGNMENT_ENABLED=false
 CHATWOOT_OUTBOUND_ENABLED=false
@@ -33,6 +34,7 @@ INI);
         self::assertSame('https://inbox.example.test/', $settings->baseUrl());
         self::assertSame('test-token', $settings->apiToken());
         self::assertSame(12, $settings->accountId());
+        self::assertSame('IN', $settings->phoneDefaultRegion());
         self::assertTrue($settings->webhookSecretConfigured());
         self::assertFalse($settings->assignmentEnabled());
         self::assertFalse($settings->outboundEnabled());
@@ -43,11 +45,12 @@ INI);
 
     public function testMissingOrInvalidValuesFailClosed(): void
     {
-        $settings = $this->settings("CHATWOOT_ACCOUNT_ID=not-a-number\nCHATWOOT_ASSIGNMENT_ENABLED=no\n");
+        $settings = $this->settings("CHATWOOT_ACCOUNT_ID=not-a-number\nCHATWOOT_PHONE_DEFAULT_REGION=India\nCHATWOOT_ASSIGNMENT_ENABLED=no\n");
 
         self::assertNull($settings->baseUrl());
         self::assertNull($settings->apiToken());
         self::assertNull($settings->accountId());
+        self::assertNull($settings->phoneDefaultRegion());
         self::assertFalse($settings->webhookSecretConfigured());
         self::assertFalse($settings->assignmentEnabled());
         self::assertFalse($settings->outboundEnabled());

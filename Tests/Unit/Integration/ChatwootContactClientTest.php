@@ -30,6 +30,7 @@ final class ChatwootContactClientTest extends TestCase
 CHATWOOT_BASE_URL=https://inbox.example.test
 CHATWOOT_API_TOKEN=test-token
 CHATWOOT_ACCOUNT_ID=12
+CHATWOOT_PHONE_DEFAULT_REGION=IN
 CHATWOOT_OUTBOUND_ENABLED=false
 INI);
         $requestCount = 0;
@@ -38,10 +39,11 @@ INI);
 
             return new MockResponse('{}');
         });
-        $client = new ChatwootContactClient(
+        $settings = new ChatwootSettings($this->configPath);
+        $client   = new ChatwootContactClient(
             $httpClient,
-            new ChatwootSettings($this->configPath),
-            new InternationalPhoneNormalizer(PhoneNumberUtil::getInstance()),
+            $settings,
+            new InternationalPhoneNormalizer(PhoneNumberUtil::getInstance(), $settings),
         );
 
         self::assertSame(

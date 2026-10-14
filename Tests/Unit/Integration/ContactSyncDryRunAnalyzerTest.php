@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MauticPlugin\MautomicCrmBundle\Tests\Unit\Integration;
 
 use libphonenumber\PhoneNumberUtil;
+use MauticPlugin\MautomicCrmBundle\Integration\ChatwootSettings;
 use MauticPlugin\MautomicCrmBundle\Integration\ContactSyncDryRunAnalyzer;
 use MauticPlugin\MautomicCrmBundle\Integration\InternationalPhoneNormalizer;
 use MauticPlugin\MautomicCrmBundle\Integration\NormalizedPhoneIndex;
@@ -12,9 +13,18 @@ use PHPUnit\Framework\TestCase;
 
 final class ContactSyncDryRunAnalyzerTest extends TestCase
 {
+    private string $configPath;
+
+    protected function tearDown(): void
+    {
+        if (isset($this->configPath) && is_file($this->configPath)) {
+            unlink($this->configPath);
+        }
+    }
+
     public function testCountsNormalizedDuplicatesWithoutExposingPhoneValues(): void
     {
-        $normalizer = new InternationalPhoneNormalizer(PhoneNumberUtil::getInstance());
+        $normalizer = $this->normalizer();
         $analyzer   = new ContactSyncDryRunAnalyzer($normalizer, new NormalizedPhoneIndex($normalizer));
 
         self::assertSame([
@@ -29,13 +39,13 @@ final class ContactSyncDryRunAnalyzerTest extends TestCase
             ['id' => 1, 'phone' => '+44 20 7946 0018', 'mobile' => null],
             ['id' => 2, 'phone' => null, 'mobile' => '+442079460018'],
             ['id' => 3, 'phone' => '+14155552671', 'mobile' => null],
-            ['id' => 4, 'phone' => '4155552671', 'mobile' => null],
+            ['id' => 4, 'phone' => '123', 'mobile' => null],
         ]));
     }
 
     public function testBlocksAContactWithTwoDistinctValidPhones(): void
     {
-        $normalizer = new InternationalPhoneNormalizer(PhoneNumberUtil::getInstance());
+        $normalizer = $this->normalizer();
         $analyzer   = new ContactSyncDryRunAnalyzer($normalizer, new NormalizedPhoneIndex($normalizer));
 
         $summary = $analyzer->analyze([[
@@ -46,5 +56,16 @@ final class ContactSyncDryRunAnalyzerTest extends TestCase
 
         self::assertSame(1, $summary['multiple_phones']);
         self::assertSame(0, $summary['safe_candidates']);
+    }
+
+    private function normalizer(): InternationalPhoneNormalizer
+    {
+        $this->configPath = tempnam(sys_get_temp_dir(), 'chatwoot-analyzer-');
+        file_put_contents($this->configPath, "CHATWOOT_PHONE_DEFAULT_REGION=IN\n");
+
+        return new InternationalPhoneNormalizer(
+            PhoneNumberUtil::getInstance(),
+            new ChatwootSettings($this->configPath),
+        );
     }
 }

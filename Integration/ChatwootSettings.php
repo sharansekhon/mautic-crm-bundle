@@ -38,6 +38,13 @@ final class ChatwootSettings
         return null !== $value && ctype_digit($value) ? (int) $value : null;
     }
 
+    public function phoneDefaultRegion(): ?string
+    {
+        $region = strtoupper((string) $this->nonEmpty('CHATWOOT_PHONE_DEFAULT_REGION'));
+
+        return 1 === preg_match('/^[A-Z]{2}$/', $region) ? $region : null;
+    }
+
     public function webhookSecretConfigured(): bool
     {
         return null !== $this->nonEmpty('CHATWOOT_WEBHOOK_SECRET');

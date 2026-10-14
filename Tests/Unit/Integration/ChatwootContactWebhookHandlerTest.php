@@ -26,13 +26,14 @@ final class ChatwootContactWebhookHandlerTest extends TestCase
     public function testRejectsAContactEventFromAnotherAccountBeforeDatabaseLookup(): void
     {
         $this->configPath = tempnam(sys_get_temp_dir(), 'chatwoot-webhook-');
-        file_put_contents($this->configPath, "CHATWOOT_ACCOUNT_ID=12\n");
-        $normalizer = new InternationalPhoneNormalizer(PhoneNumberUtil::getInstance());
+        file_put_contents($this->configPath, "CHATWOOT_ACCOUNT_ID=12\nCHATWOOT_PHONE_DEFAULT_REGION=IN\n");
+        $settings   = new ChatwootSettings($this->configPath);
+        $normalizer = new InternationalPhoneNormalizer(PhoneNumberUtil::getInstance(), $settings);
         $handler    = new ChatwootContactWebhookHandler(
             $this->createMock(Connection::class),
             $normalizer,
             new NormalizedPhoneIndex($normalizer),
-            new ChatwootSettings($this->configPath),
+            $settings,
         );
 
         self::assertSame([
@@ -49,13 +50,14 @@ final class ChatwootContactWebhookHandlerTest extends TestCase
     public function testIgnoresNonContactEvents(): void
     {
         $this->configPath = tempnam(sys_get_temp_dir(), 'chatwoot-webhook-');
-        file_put_contents($this->configPath, "CHATWOOT_ACCOUNT_ID=12\n");
-        $normalizer = new InternationalPhoneNormalizer(PhoneNumberUtil::getInstance());
+        file_put_contents($this->configPath, "CHATWOOT_ACCOUNT_ID=12\nCHATWOOT_PHONE_DEFAULT_REGION=IN\n");
+        $settings   = new ChatwootSettings($this->configPath);
+        $normalizer = new InternationalPhoneNormalizer(PhoneNumberUtil::getInstance(), $settings);
         $handler    = new ChatwootContactWebhookHandler(
             $this->createMock(Connection::class),
             $normalizer,
             new NormalizedPhoneIndex($normalizer),
-            new ChatwootSettings($this->configPath),
+            $settings,
         );
 
         self::assertSame(
