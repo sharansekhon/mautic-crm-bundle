@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace MauticPlugin\MautomicCrmBundle\Integration;
 
-use Doctrine\ORM\EntityManagerInterface;
 use Mautic\LeadBundle\Entity\Lead;
 use Mautic\LeadBundle\Entity\LeadRepository;
 use MauticPlugin\MautomicCrmBundle\Entity\Deal;
@@ -13,7 +12,8 @@ use MauticPlugin\MautomicCrmBundle\Entity\DealRepository;
 final class ChatwootDryRunRouter
 {
     public function __construct(
-        private readonly EntityManagerInterface $entityManager,
+        private readonly LeadRepository $leadRepository,
+        private readonly DealRepository $dealRepository,
         private readonly ChatwootSettings $settings,
     ) {
     }
@@ -69,14 +69,12 @@ final class ChatwootDryRunRouter
     /** @return array<int, Lead> */
     private function contactsForPhone(string $phone): array
     {
-        /** @var LeadRepository $repository */
-        $repository = $this->entityManager->getRepository(Lead::class);
-        $contacts   = [];
+        $contacts = [];
 
         foreach (['phone', 'mobile'] as $field) {
             foreach ($this->phoneCandidates($phone) as $candidate) {
-                foreach ($repository->getLeadsByFieldValue($field, $candidate) as $contact) {
-                    if ($contact instanceof Lead && null !== $contact->getId()) {
+                foreach ($this->leadRepository->getLeadsByFieldValue($field, $candidate) as $contact) {
+                    if ($contact instanceof Lead) {
                         $contacts[$contact->getId()] = $contact;
                     }
                 }
@@ -88,9 +86,7 @@ final class ChatwootDryRunRouter
 
     private function openDealOwnerId(Lead $contact): ?int
     {
-        /** @var DealRepository $repository */
-        $repository = $this->entityManager->getRepository(Deal::class);
-        $deal = $repository->createQueryBuilder('d')
+        $deal = $this->dealRepository->createQueryBuilder('d')
             ->innerJoin('d.stage', 'stage')
             ->innerJoin('d.owner', 'owner')
             ->where('d.contact = :contact')

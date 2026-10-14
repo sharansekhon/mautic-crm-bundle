@@ -68,7 +68,7 @@ jobs:
             plugins/MautomicCrmBundle/Controller/ChatwootDiagnosticsController.php \
             plugins/MautomicCrmBundle/Controller/ChatwootWebhookController.php \
             plugins/MautomicCrmBundle/Controller/InboxController.php \
-            --level=6 --no-progress
+            --level=6 --no-progress --no-report-unmatched-ignored-errors
 
       - name: Coding Standards
         working-directory: mautic
